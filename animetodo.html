@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>見たいアニメToDoリスト</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP&display=swap" rel="stylesheet">
+  <style>
+  body {
+  font-family: 'Noto Sans JP', sans-serif;
+  background: linear-gradient(to right, #141e30, #243b55);
+  color: #fff;
+  text-align: center;
+  padding: 20px;
+}
+
+h1 {
+  font-size: 32px;
+  margin-bottom: 20px;
+}
+
+#animeList {
+  margin-top: 20px;
+  padding: 0;
+  list-style: none;
+  max-width: 900px;
+  margin: auto;
+}
+
+li {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  margin: 20px auto;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  transition: transform 0.2s ease;
+}
+
+li:hover {
+  transform: translateY(-5px);
+}
+
+.anime-details {
+  font-size: 24px;
+  text-align: left;
+  font-weight: bold;
+  border: 1px solid rgba(255,255,255,0.3);
+  padding: 6px 10px;
+  border-radius: 6px;
+  background-color: rgba(255,255,255,0.1);
+}
+
+.anime-meta {
+  font-size: 14px;
+  padding-top: 2px;
+  padding-left: 2px;
+  text-align: left;
+  color: #9c9c9c;
+}
+
+.button-group {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+/* 共通のボタンデザイン */
+button {
+  background: linear-gradient(135deg, #cb1111, #fc8225);
+  border: none;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  padding: 8px 12px;
+  transition: background 0.3s ease, transform 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 小さめパディング: 話数更新・サイト切替専用 */
+.inline-btn {
+  padding: 4px 6px;
+}
+
+
+button:hover {
+  background: linear-gradient(135deg, #e0615e, #e0cd00);
+  transform: scale(1.05);
+}
+
+.status-btn { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+.status-btn:hover { background: linear-gradient(135deg, #58d68d, #2ecc71); }
+.site-btn { background: linear-gradient(135deg, #f39c12, #e67e22); }
+.site-btn:hover { background: linear-gradient(135deg, #f1c40f, #f39c12); }
+.episode-btn { background: linear-gradient(135deg, #3498db, #2980b9); }
+.episode-btn:hover { background: linear-gradient(135deg, #5dade2, #3498db); }
+
+a.site-link {
+  color: #f1c40f;
+  text-decoration: none;
+}
+a.site-link:hover {
+  text-decoration: underline;
+}
+
+input, select {
+  padding: 10px;
+  border-radius: 6px;
+  border: none;
+  margin: 5px 0;
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(255,255,255,0.1);
+  color: white;
+}
+
+#showInputButton {
+  background: #e74c3c;
+  border: none;
+  color: white;
+  padding: 5px 20px;
+  border-radius: 8px;
+  font-size: 12px;
+  margin: 0 auto;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+#showInputButton:hover {
+  background: #c0392b;
+}
+.star {
+  color: gold;
+  font-size: 20px;
+}
+
+.watched {
+  background: rgba(46, 204, 113, 0.2); /* 明るいグリーン系 */
+  border: 1px solid rgba(46, 204, 113, 0.4);
+}
+
+
+
+@media (min-width: 600px) {
+  li {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .anime-details { flex: 1; }
+  .anime-meta { flex: 2; }
+  .button-group {
+    flex: 0 0 auto;
+    margin-left: 20px;
+  }
+}
+
+  </style>
+</head>
+<body>
+
+  <h1>見たいアニメToDoリスト</h1>
+
+  <button id="showInputButton">新しいアニメを追加</button>
+
+  <div id="inputArea" style="display:none; margin-top:20px; max-width:600px; margin:auto;">
+    <input id="titleInput" placeholder="アニメタイトル" />
+    <select id="weekdayInput">
+      <option value="月曜日">月曜日</option>
+      <option value="火曜日">火曜日</option>
+      <option value="水曜日">水曜日</option>
+      <option value="木曜日">木曜日</option>
+      <option value="金曜日">金曜日</option>
+      <option value="土曜日">土曜日</option>
+      <option value="日曜日">日曜日</option>
+      <option value="放送済み">放送済み</option>
+    </select>
+    <input id="episodesInput" type="number" min="1" placeholder="総話数" />
+    <input id="currentEpisodeInput" type="number" min="0" placeholder="現在視聴話数" />
+    <select id="genreInput">
+      <option value="アクション">アクション</option>
+      <option value="恋愛">恋愛</option>
+      <option value="日常">日常</option>
+      <option value="SF">SF</option>
+      <option value="ファンタジー">ファンタジー</option>
+    </select>
+    <select id="siteInput">
+      <option value="Netflix">Netflix</option>
+      <option value="Amazon Prime">Amazon Prime</option>
+      <option value="Disney+">Disney+</option>
+      <option value="dアニメストア">dアニメストア</option>
+      <option value="Hulu">Hulu</option>
+      <option value="U-NEXT">U-NEXT</option>
+      <option value="Abema">Abema</option>
+      <option value="9anime">9anime</option>
+      <option value="その他">その他</option>
+    </select>
+    <button onclick="addAnime()">アニメを追加</button>
+    
+  </div>
+
+  <ul id="animeList"></ul>
+
+  <script>
+    let animes = [];
+
+    const siteLinks = {
+      "Netflix": "https://www.netflix.com/",
+      "Amazon Prime": "https://www.amazon.co.jp/gp/video/storefront",
+      "Disney+": "https://www.disneyplus.com/ja-jp",
+      "dアニメストア": "https://anime.dmkt-sp.jp/",
+      "Hulu": "https://www.hulu.jp/",
+      "U-NEXT": "https://video.unext.jp/",
+      "Abema": "https://abema.tv/",
+      "9anime": "https://9animetv.to/",
+    };
+
+    const siteSearchLinks = {
+      "Netflix": "https://www.netflix.com/search?q=",
+      "Amazon Prime": "https://www.amazon.co.jp/gp/video/search?phrase=",
+      "Disney+": "https://www.disneyplus.com/ja-jp/search/",
+      "dアニメストア": "https://animestore.docomo.ne.jp/animestore/sch_pc?searchKey=",
+      "Hulu": "https://www.hulu.jp/search?q=",
+      "U-NEXT": "https://video.unext.jp/freeword?query=",
+      "Abema": "https://abema.tv/search?q=",
+      "9anime": "https://9animetv.to/search?keyword=",
+      "その他": "#"
+    };
+
+    window.onload = function () {
+      const saved = localStorage.getItem("animes");
+      if (saved) {
+        animes = JSON.parse(saved);
+        renderAnimes();
+      }
+    };
+
+    function addAnime() {
+      const title = document.getElementById("titleInput").value.trim();
+      const weekday = document.getElementById("weekdayInput").value;
+      const episodes = document.getElementById("episodesInput").value.trim();
+      const currentEpisode = document.getElementById("currentEpisodeInput").value.trim();
+      const genre = document.getElementById("genreInput").value;
+      const site = document.getElementById("siteInput").value;
+
+      if (title) {
+        animes.push({
+          title: title,
+          weekday: weekday,
+          episodes: episodes,
+          currentEpisode: currentEpisode,
+          genre: genre,
+          site: site,
+          status: "未視聴",
+          rating: null
+        });
+        clearInputs();
+        saveAnimes();
+        renderAnimes();
+
+        document.getElementById("inputArea").style.display = "none";
+        showBtn.style.display = "inline-block";
+      } else {
+        alert("タイトルを入力してください！");
+      }
+    }
+
+    function clearInputs() {
+      document.getElementById("titleInput").value = "";
+      document.getElementById("weekdayInput").value = "月曜日";
+      document.getElementById("episodesInput").value = "";
+      document.getElementById("currentEpisodeInput").value = "";
+      document.getElementById("genreInput").value = "アクション";
+      document.getElementById("siteInput").value = "Netflix";
+    }
+
+    function deleteAnime(title) {
+      animes = animes.filter(a => a.title !== title);
+      saveAnimes();
+      renderAnimes();
+    }
+
+    function toggleStatus(title) {
+      const anime = animes.find(a => a.title === title);
+      if (anime) {
+        if (anime.status === "未視聴") {
+          const rating = prompt("視聴済みにします。評価を1〜5で入力してください（キャンセルで未評価）");
+          if (rating) {
+            const num = parseInt(rating);
+            if (num >=1 && num <=5) {
+              anime.rating = num;
+            } else {
+              alert("1〜5の数値で入力してください");
+              return;
+            }
+          }
+          anime.status = "視聴済み";
+        } else {
+          anime.status = "未視聴";
+          anime.rating = null;
+        }
+        saveAnimes();
+        renderAnimes();
+      }
+    }
+
+    function toggleSite(title) {
+      const anime = animes.find(a => a.title === title);
+      if (anime) {
+        const sites = Object.keys(siteLinks);
+        let currentIndex = sites.indexOf(anime.site);
+        currentIndex = (currentIndex + 1) % sites.length;
+        anime.site = sites[currentIndex];
+        saveAnimes();
+        renderAnimes();
+      }
+    }
+
+    function updateCurrentEpisode(title) {
+      const anime = animes.find(a => a.title === title);
+      if (anime) {
+        const newEp = prompt("現在視聴中の話数を入力してください:", anime.currentEpisode || "");
+        if (newEp !== null) {
+          anime.currentEpisode = newEp;
+          saveAnimes();
+          renderAnimes();
+        }
+      }
+    }
+
+        function updateCurrentEpisodeDirect(title, newEp) {
+      const anime = animes.find(a => a.title === title);
+      if (anime) {
+        anime.currentEpisode = newEp;
+        saveAnimes();
+      }
+    }
+
+    function updateTitle(oldTitle, newTitle) {
+  if (!newTitle.trim()) {
+    alert("タイトルを空にすることはできません。");
+    return;
+  }
+  // 同じタイトルが既に存在する場合、上書きを防ぐ
+  if (animes.some(a => a.title === newTitle.trim() && a.title !== oldTitle)) {
+    alert("同じタイトルのアニメが既にあります。別の名前を入力してください。");
+    return;
+  }
+
+  const anime = animes.find(a => a.title === oldTitle);
+  if (anime) {
+    anime.title = newTitle.trim();
+    saveAnimes();
+    renderAnimes();
+  }
+}
+
+function renderAnimes() {
+  const list = document.getElementById("animeList");
+  list.innerHTML = "";
+
+  // ソート: 未視聴が先、同じステータスならタイトル昇順
+  const sorted = [...animes].sort((a, b) => {
+    if (a.status === b.status) {
+      return a.title.localeCompare(b.title, 'ja'); // タイトル昇順（日本語対応）
+    }
+    return a.status === "未視聴" ? -1 : 1;
+  });
+
+  sorted.forEach(anime => {
+    const ratingStars = anime.rating
+      ? "評価: " + "⭐︎".repeat(anime.rating)
+      : "";
+
+    const siteURL = siteLinks[anime.site] || "#";
+    const searchURL = siteSearchLinks[anime.site] + encodeURIComponent(anime.title);
+
+    const li = document.createElement("li");
+    if (anime.status === "視聴済み") {
+      li.classList.add("watched");
+    }
+
+    li.innerHTML = `
+      <div class="anime-main">
+        <div class="anime-details">
+          <input
+            type="text"
+            value="${anime.title}"
+            onchange="updateTitle('${anime.title}', this.value)"
+            style="width:100%; font-size:20px; padding:4px; border-radius:6px; border:none; background:rgba(255,255,255,0.1); color:white;"
+          />
+        </div>
+        <div class="anime-meta">
+          放送曜日: ${anime.weekday}<br>
+          総話数: ${anime.episodes || "不明"}<br>
+          <div style="display:flex; align-items:center; gap:6px;">
+            現在視聴話数:
+            <input type="number" min="0" value="${anime.currentEpisode || ""}"
+              onchange="updateCurrentEpisodeDirect('${anime.title}', this.value)"
+              style="width:60px; padding:4px; border-radius:4px; border:none; background:#333; color:white;">
+          </div>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <button class="site-btn inline-btn" onclick="toggleSite('${anime.title}')"
+              title="視聴サイト切替">
+              <img src="compare_arrows.png" alt="サイト切替" style="width:13px;height:13px;">
+            </button>
+            視聴サイト:
+            <a href="${searchURL}" target="_blank" class="site-link">${anime.site}</a>
+          </div>
+          状況: ${anime.status}<br>
+          ${ratingStars}
+        </div>
+      </div>
+      <div class="button-group">
+        <button class="status-btn" onclick="toggleStatus('${anime.title}')">
+          <img src="check.png" alt="視聴切替" style="width:24px;height:24px;">
+        </button>
+        <button onclick="deleteAnime('${anime.title}')">
+          <img src="delete.png" alt="削除" style="width:24px;height:24px;">
+        </button>
+      </div>
+    `;
+    list.appendChild(li);
+  });
+}
+
+    function saveAnimes() {
+      localStorage.setItem("animes", JSON.stringify(animes));
+    }
+
+    const showBtn = document.getElementById("showInputButton");
+    showBtn.addEventListener("click", () => {
+      document.getElementById("inputArea").style.display = "block";
+      showBtn.style.display = "none";
+    });
+
+    function flashButtonColor(button, color) {
+      const originalColor = button.style.backgroundColor;
+      button.style.backgroundColor = color;
+      setTimeout(() => {
+        button.style.backgroundColor = originalColor;
+      }, 200);
+    }
+
+  </script>
+</body>
+</html>
