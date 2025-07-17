@@ -6,10 +6,40 @@
   <title>見たいアニメToDoリスト</title>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP&display=swap" rel="stylesheet">
   <style>
+    /* ダークモードのデフォルト変数 */
+:root {
+  --bg-gradient: linear-gradient(to right, #141e30, #243b55);
+  --text-color: #fff;
+  --li-bg: rgba(255,255,255,0.05);
+  --li-border: rgba(255,255,255,0.1);
+  --btn-bg: linear-gradient(135deg, #cb1111, #fc8225);
+  --btn-hover-bg: linear-gradient(135deg, #e0615e, #e0cd00);
+  /* …ステータスボタン、サイトボタン、話数ボタンの変数も同様に定義… */
+}
+
+/* ライトモード用に上書きする変数 */
+.light-mode {
+  --bg-gradient: linear-gradient(to right, #fafafa, #f0f0f0);
+  --text-color: #333;
+  --li-bg: #fff;
+  --li-border: rgba(0,0,0,0.1);
+  --btn-bg: linear-gradient(135deg, #ff8a65, #ffd54f);
+  --btn-hover-bg: linear-gradient(135deg, #ffa07a, #ffe082);
+  /* …他のボタン変数も同様に定義… */
+   /* 入力欄／セレクトの色 */
+  --input-bg: #e0e0e0;      /* 例：薄いグレー */
+  --input-text: #333;       /* 例：濃い文字色 */
+
+  /* 視聴完了ボタン（ステータスボタン）の色 */
+  --status-btn-bg: linear-gradient(135deg, #4caf50, #357a38);
+  --status-btn-hover-bg: linear-gradient(135deg, #66bb6a, #4caf50);
+}
+    
   body {
   font-family: 'Noto Sans JP', sans-serif;
-  background: linear-gradient(to right, #141e30, #243b55);
-  color: #fff;
+  background: var(--bg-gradient);
+  color: var(--text-color);
+  transition: background 0.3s, color 0.3s;
   text-align: center;
   padding: 20px;
 }
@@ -28,9 +58,10 @@ h1 {
 }
 
 li {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--li-bg);
+  border: 1px solid var(--li-border);
+  transition: background 0.3s, border 0.3s;
   backdrop-filter: blur(4px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
   color: #fff;
   margin: 20px auto;
   padding: 20px;
@@ -39,7 +70,6 @@ li {
   display: flex;
   flex-direction: column;
   gap: 15px;
-  transition: transform 0.2s ease;
 }
 
 li:hover {
@@ -74,7 +104,8 @@ li:hover {
 
 /* 共通のボタンデザイン */
 button {
-  background: linear-gradient(135deg, #cb1111, #fc8225);
+  background: var(--btn-bg);
+  transition: background 0.3s, transform 0.2s;
   border: none;
   color: white;
   border-radius: 8px;
@@ -93,16 +124,28 @@ button {
 
 
 button:hover {
-  background: linear-gradient(135deg, #e0615e, #e0cd00);
+  background: var(--btn-hover-bg);
   transform: scale(1.05);
 }
 
-.status-btn { background: linear-gradient(135deg, #2ecc71, #27ae60); }
-.status-btn:hover { background: linear-gradient(135deg, #58d68d, #2ecc71); }
-.site-btn { background: linear-gradient(135deg, #f39c12, #e67e22); }
-.site-btn:hover { background: linear-gradient(135deg, #f1c40f, #f39c12); }
-.episode-btn { background: linear-gradient(135deg, #3498db, #2980b9); }
-.episode-btn:hover { background: linear-gradient(135deg, #5dade2, #3498db); }
+.status-btn {
+  background: var(--status-btn-bg);
+}
+.status-btn:hover {
+  background: var(--status-btn-hover-bg);
+}
+.site-btn {
+  background: var(--site-btn-bg);
+}
+.site-btn:hover {
+  background: var(--site-btn-hover-bg);
+}
+.episode-btn {
+  background: var(--episode-btn-bg);
+}
+.episode-btn:hover {
+  background: var(--episode-btn-hover-bg);
+}
 
 a.site-link {
   color: #f1c40f;
@@ -119,8 +162,8 @@ input, select {
   margin: 5px 0;
   width: 100%;
   box-sizing: border-box;
-  background: rgba(255,255,255,0.1);
-  color: white;
+  background: var(--input-bg);
+  color: var(--input-text);
 }
 
 #showInputButton {
@@ -148,6 +191,17 @@ input, select {
   border: 1px solid rgba(46, 204, 113, 0.4);
 }
 
+/* ダーク／ライト問わず、タイトル入力欄のスタイル */
+.title-input {
+  width: 100%;
+  font-size: 20px;
+  padding: 4px;
+  border-radius: 6px;
+  border: none;
+  background: var(--input-bg);
+  color: var(--input-text);
+  transition: background 0.3s, color 0.3s;
+}
 
 
 @media (min-width: 600px) {
@@ -164,9 +218,11 @@ input, select {
   }
 }
 
+
   </style>
 </head>
 <body>
+  <button id="modeToggle">🌙／☀️ モード切替</button>
 
   <h1>見たいアニメToDoリスト</h1>
 
@@ -378,8 +434,11 @@ function renderAnimes() {
 
   sorted.forEach(anime => {
     const ratingStars = anime.rating
-      ? "評価: " + "⭐︎".repeat(anime.rating)
-      : "";
+  ? "評価: " + Array(anime.rating)
+      .fill("★")
+      .map(s => `<span class="star">${s}</span>`)
+      .join("")
+  : "";
 
     const siteURL = siteLinks[anime.site] || "#";
     const searchURL = siteSearchLinks[anime.site] + encodeURIComponent(anime.title);
@@ -396,7 +455,7 @@ function renderAnimes() {
             type="text"
             value="${anime.title}"
             onchange="updateTitle('${anime.title}', this.value)"
-            style="width:100%; font-size:20px; padding:4px; border-radius:6px; border:none; background:rgba(255,255,255,0.1); color:white;"
+            class="title-input"
           />
         </div>
         <div class="anime-meta">
@@ -409,8 +468,9 @@ function renderAnimes() {
               style="width:60px; padding:4px; border-radius:4px; border:none; background:#333; color:white;">
           </div>
           <div style="display:flex; align-items:center; gap:6px;">
-            <button class="site-btn inline-btn" onclick="toggleSite('${anime.title}')" title="視聴サイト切替">
-              <img src="/Anime-Todo/images/compare_arrows.png" alt="サイト切替" style="width:13px;height:13px;">
+            <button class="site-btn inline-btn" onclick="toggleSite('${anime.title}')"
+              title="視聴サイト切替">
+              <img src="compare_arrows.png" alt="サイト切替" style="width:13px;height:13px;">
             </button>
             視聴サイト:
             <a href="${searchURL}" target="_blank" class="site-link">${anime.site}</a>
@@ -421,10 +481,10 @@ function renderAnimes() {
       </div>
       <div class="button-group">
         <button class="status-btn" onclick="toggleStatus('${anime.title}')">
-          <img src="/Anime-Todo/images/check.png" alt="視聴切替" style="width:24px;height:24px;">
+          <img src="check.png" alt="視聴切替" style="width:24px;height:24px;">
         </button>
         <button onclick="deleteAnime('${anime.title}')">
-          <img src="/Anime-Todo/images/delete.png" alt="削除" style="width:24px;height:24px;">
+          <img src="delete.png" alt="削除" style="width:24px;height:24px;">
         </button>
       </div>
     `;
@@ -449,6 +509,11 @@ function renderAnimes() {
         button.style.backgroundColor = originalColor;
       }, 200);
     }
+
+    const toggle = document.getElementById('modeToggle');
+    toggle.addEventListener('click', () => {
+      document.body.classList.toggle('light-mode');
+    });
 
   </script>
 </body>
