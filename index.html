@@ -470,7 +470,7 @@ function renderAnimes() {
           <div style="display:flex; align-items:center; gap:6px;">
             <button class="site-btn inline-btn" onclick="toggleSite('${anime.title}')"
               title="視聴サイト切替">
-              <img src="compare_arrows.png" alt="サイト切替" style="width:13px;height:13px;">
+              <img src="images/compare_arrows.png" alt="サイト切替" style="width:13px;height:13px;">
             </button>
             視聴サイト:
             <a href="${searchURL}" target="_blank" class="site-link">${anime.site}</a>
@@ -481,10 +481,10 @@ function renderAnimes() {
       </div>
       <div class="button-group">
         <button class="status-btn" onclick="toggleStatus('${anime.title}')">
-          <img src=""https://raw.githubusercontent.com/your-username/anime-todo/main/images/check.png"" alt="視聴切替" style="width:24px;height:24px;">
+          <img src="images/check.png" alt="視聴切替" style="width:24px;height:24px;">
         </button>
         <button onclick="deleteAnime('${anime.title}')">
-          <img src="delete.png" alt="削除" style="width:24px;height:24px;">
+          <img src="images/delete.png" alt="削除" style="width:24px;height:24px;">
         </button>
       </div>
     `;
